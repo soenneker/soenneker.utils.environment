@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 
 namespace Soenneker.Utils.Environment;
 
+/// <summary>
+/// A utility library for useful environment related functionality
+/// </summary>
 public static class EnvironmentUtil
 {
     // Init needs to be done outside of ctor because Fact evaluates before the ctor of the test
@@ -15,11 +19,12 @@ public static class EnvironmentUtil
         _ = bool.TryParse(pipelineEnv, out bool isPipeline);
 
         return isPipeline;
-    });
+    }, LazyThreadSafetyMode.ExecutionAndPublication);
 
     /// <summary>
-    /// Syntactic sugar for lazy instance
+    /// Set the Environment variable "PipelineEnvironment" to "true" for this to return true. <para/>
     /// </summary>
+    /// <remarks>Syntactic sugar for lazy instance</remarks>
     [Pure]
     public static bool IsPipeline => _isPipelineLazy.Value;
 
