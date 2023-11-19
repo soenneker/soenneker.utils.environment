@@ -3,6 +3,7 @@ using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
+using Soenneker.Extensions.String;
 
 namespace Soenneker.Utils.Environment;
 
@@ -58,5 +59,20 @@ public static class EnvironmentUtil
             Log.Warning(e, "Could not get the machine name from the environment, returning \"Unknown\"");
             return "Unknown";
         }
+    }
+
+    /// <summary>
+    /// Throws if the environment variable is null or empty, typically used if there is a hard requirement this variable exists
+    /// </summary>
+    [Pure]
+    public static string GetVariableStrict(string variable)
+    {
+        variable.ThrowIfNullOrEmpty(nameof(variable));
+
+        string? result = System.Environment.GetEnvironmentVariable(variable);
+
+        result.ThrowIfNullOrEmpty(nameof(variable));
+
+        return result!;
     }
 }
