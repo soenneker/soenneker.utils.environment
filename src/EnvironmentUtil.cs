@@ -71,7 +71,7 @@ public static class EnvironmentUtil
 
         string? result = System.Environment.GetEnvironmentVariable(variable);
 
-        result.ThrowIfNullOrEmpty(nameof(variable));
+        result.ThrowIfNullOrEmpty(variable);
 
         return result!;
     }
