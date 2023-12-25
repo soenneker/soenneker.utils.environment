@@ -8,5 +8,5 @@
 ## Installation
 
 ```
-Install-Package Soenneker.Utils.Environment
+dotnet add package Soenneker.Utils.Environment
 ```
