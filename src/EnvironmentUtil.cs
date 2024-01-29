@@ -34,13 +34,11 @@ public static class EnvironmentUtil
     /// </summary>
     public static Task PipelineDelay(int millisecondsDelay)
     {
-        if (IsPipeline)
-        {
-            Log.Information("Pipeline delaying for {ms}ms...", millisecondsDelay);
-            return Task.Delay(millisecondsDelay);
-        }
+        if (!IsPipeline)
+            return Task.CompletedTask;
 
-        return Task.CompletedTask;
+        Log.Information("Pipeline delaying for {ms}ms...", millisecondsDelay);
+        return Task.Delay(millisecondsDelay);
     }
 
     /// <summary>
