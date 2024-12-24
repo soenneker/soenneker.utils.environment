@@ -38,7 +38,7 @@
         <None Include="..\icon.png" Pack="true" PackagePath="\" />
 
         <PackageReference Include="Serilog" Version="4.2.0" />
-        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="3.0.145" />
+        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="3.0.151" />
         <PackageReference Include="Soenneker.Extensions.String" Version="3.0.319" />
     </ItemGroup>
 </Project>
