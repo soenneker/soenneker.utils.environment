@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net9.0</TargetFrameworks>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <Platforms>AnyCPU</Platforms>
         <NoWarn>$(NoWarn);1591</NoWarn>
@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <Description>A utility library for useful environment related functionality</Description>
-        <Version Condition="'$(BUILD_VERSION)' == ''">3.0.0</Version>
+        <Version Condition="'$(BUILD_VERSION)' == ''">4.0.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.Utils.Environment</AssemblyName>
         <PackageId>Soenneker.Utils.Environment</PackageId>
@@ -36,9 +36,11 @@
         <None Include="..\README.md" Pack="true" PackagePath="\" />
         <None Include="..\LICENSE" Pack="true" PackagePath="\" />
         <None Include="..\icon.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
+    <ItemGroup>
         <PackageReference Include="Serilog" Version="4.3.0" />
-        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="3.0.180" />
-        <PackageReference Include="Soenneker.Extensions.String" Version="3.0.558" />
+        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="4.0.181" />
+        <PackageReference Include="Soenneker.Extensions.String" Version="4.0.559" />
     </ItemGroup>
 </Project>
