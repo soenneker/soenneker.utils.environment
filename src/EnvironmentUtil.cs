@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Serilog;
+using Soenneker.Extensions.String;
+using Soenneker.Utils.AtomicNullableBools;
+using System;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
-using Soenneker.Extensions.String;
 
 namespace Soenneker.Utils.Environment;
 
@@ -12,33 +13,47 @@ namespace Soenneker.Utils.Environment;
 /// </summary>
 public static class EnvironmentUtil
 {
-    // Init needs to be done outside of ctor because Fact evaluates before the ctor of the test
-    private static readonly Lazy<bool> _isPipelineLazy = new(() =>
-    {
-        string? pipelineEnv = System.Environment.GetEnvironmentVariable("PipelineEnvironment");
+    private const string _pipelineEnvironmentVar = "PipelineEnvironment";
+    private const string _unknownMachineName = "Unknown";
 
-        _ = bool.TryParse(pipelineEnv, out bool isPipeline);
-
-        return isPipeline;
-    }, LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly AtomicNullableBool _isPipeline = new();
 
     /// <summary>
-    /// Set the Environment variable "PipelineEnvironment" to "true" for this to return true. <para/>
+    /// Set the Environment variable "PipelineEnvironment" to "true" for this to return true.
     /// </summary>
-    /// <remarks>Syntactic sugar for lazy instance</remarks>
+    /// <remarks>Syntactic sugar for cached env lookup</remarks>
     [Pure]
-    public static bool IsPipeline => _isPipelineLazy.Value;
+    public static bool IsPipeline
+    {
+        get
+        {
+            // Fast path: already computed
+            bool? cached = _isPipeline.Value;
+            if (cached.HasValue)
+                return cached.Value;
+
+            // Compute once
+            string? pipelineEnv = System.Environment.GetEnvironmentVariable(_pipelineEnvironmentVar);
+            bool value = bool.TryParse(pipelineEnv, out bool parsed) && parsed;
+
+            // Publish only if still unknown (races are fine)
+            _isPipeline.TrySet(value);
+
+            return value;
+        }
+    }
 
     /// <summary>
     /// If we're in a pipeline environment, Task.Delay (and log)
     /// </summary>
-    public static Task PipelineDelay(int millisecondsDelay)
+    public static Task PipelineDelay(int millisecondsDelay, CancellationToken cancellationToken = default)
     {
-        if (!IsPipeline)
+        if (!IsPipeline || millisecondsDelay <= 0)
             return Task.CompletedTask;
 
         Log.Information("Pipeline delaying for {ms}ms...", millisecondsDelay);
-        return Task.Delay(millisecondsDelay);
+
+        return Task.Delay(millisecondsDelay, cancellationToken);
     }
 
     /// <summary>
@@ -55,12 +70,12 @@ public static class EnvironmentUtil
         catch (Exception e)
         {
             Log.Warning(e, "Could not get the machine name from the environment, returning \"Unknown\"");
-            return "Unknown";
+            return _unknownMachineName;
         }
     }
 
     /// <summary>
-    /// Throws if the environment variable is null or empty, typically used if there is a hard requirement this variable exists
+    /// Throws if the environment variable is null or empty
     /// </summary>
     [Pure]
     public static string GetVariableStrict(string variable)
@@ -68,7 +83,6 @@ public static class EnvironmentUtil
         variable.ThrowIfNullOrEmpty(nameof(variable));
 
         string? result = System.Environment.GetEnvironmentVariable(variable);
-
         result.ThrowIfNullOrEmpty(variable);
 
         return result!;
