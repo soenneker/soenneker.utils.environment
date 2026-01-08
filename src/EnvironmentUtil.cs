@@ -1,8 +1,11 @@
 ﻿using Serilog;
+using Serilog.Events;
+using Soenneker.Atomics.NullableBools;
+using Soenneker.Atomics.Strings;
 using Soenneker.Extensions.String;
-using Soenneker.Utils.AtomicNullableBools;
 using System;
 using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +19,10 @@ public static class EnvironmentUtil
     private const string _pipelineEnvironmentVar = "PipelineEnvironment";
     private const string _unknownMachineName = "Unknown";
 
-    private static readonly AtomicNullableBool _isPipeline = new();
+    private static AtomicNullableBool _isPipeline = new();
+
+    // Cache machine name once; if it throws, cache "Unknown" once.
+    private static readonly AtomicString _machineName = new();
 
     /// <summary>
     /// Set the Environment variable "PipelineEnvironment" to "true" for this to return true.
@@ -25,33 +31,47 @@ public static class EnvironmentUtil
     [Pure]
     public static bool IsPipeline
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            // Fast path: already computed
             bool? cached = _isPipeline.Value;
+
             if (cached.HasValue)
                 return cached.Value;
 
-            // Compute once
-            string? pipelineEnv = System.Environment.GetEnvironmentVariable(_pipelineEnvironmentVar);
-            bool value = bool.TryParse(pipelineEnv, out bool parsed) && parsed;
-
-            // Publish only if still unknown (races are fine)
-            _isPipeline.TrySet(value);
-
-            return value;
+            return ComputeIsPipeline();
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool ComputeIsPipeline()
+    {
+        bool? cached = _isPipeline.Value;
+        if (cached.HasValue)
+            return cached.Value;
+
+        string? value = System.Environment.GetEnvironmentVariable(_pipelineEnvironmentVar);
+
+        bool isTrue = value is not null && (value.Length == 4
+            ? value[0] is 't' or 'T' && value[1] is 'r' or 'R' && value[2] is 'u' or 'U' && value[3] is 'e' or 'E'
+            : bool.TryParse(value, out bool parsed) && parsed);
+
+        _isPipeline.TrySet(isTrue);
+
+        return isTrue;
     }
 
     /// <summary>
     /// If we're in a pipeline environment, Task.Delay (and log)
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task PipelineDelay(int millisecondsDelay, CancellationToken cancellationToken = default)
     {
-        if (!IsPipeline || millisecondsDelay <= 0)
+        if (millisecondsDelay <= 0 || !IsPipeline)
             return Task.CompletedTask;
 
-        Log.Information("Pipeline delaying for {ms}ms...", millisecondsDelay);
+        if (Log.IsEnabled(LogEventLevel.Information))
+            Log.Information("Pipeline delaying for {ms}ms...", millisecondsDelay);
 
         return Task.Delay(millisecondsDelay, cancellationToken);
     }
@@ -63,21 +83,42 @@ public static class EnvironmentUtil
     [Pure]
     public static string GetMachineName()
     {
+        string? cached = _machineName.Value;
+        if (cached is not null)
+            return cached;
+
+        return CacheMachineName();
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static string CacheMachineName()
+    {
+        string? cached = _machineName.Value;
+        if (cached is not null)
+            return cached;
+
+        string result;
         try
         {
-            return System.Environment.MachineName;
+            result = System.Environment.MachineName;
         }
         catch (Exception e)
         {
-            Log.Warning(e, "Could not get the machine name from the environment, returning \"Unknown\"");
-            return _unknownMachineName;
+            if (Log.IsEnabled(LogEventLevel.Warning))
+                Log.Warning(e, "Could not get the machine name from the environment, returning \"Unknown\"");
+
+            result = _unknownMachineName;
         }
+
+        _machineName.TrySet(result);
+        return _machineName.Value!;
     }
 
     /// <summary>
     /// Throws if the environment variable is null or empty
     /// </summary>
     [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string GetVariableStrict(string variable)
     {
         variable.ThrowIfNullOrEmpty(nameof(variable));
