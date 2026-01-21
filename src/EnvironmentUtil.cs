@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Serilog.Events;
-using Soenneker.Atomics.NullableBools;
 using Soenneker.Atomics.Strings;
+using Soenneker.Atomics.ValueNullableBools;
 using Soenneker.Extensions.String;
 using System;
 using System.Diagnostics.Contracts;
@@ -19,7 +19,7 @@ public static class EnvironmentUtil
     private const string _pipelineEnvironmentVar = "PipelineEnvironment";
     private const string _unknownMachineName = "Unknown";
 
-    private static AtomicNullableBool _isPipeline = new();
+    private static ValueAtomicNullableBool _isPipeline = new();
 
     // Cache machine name once; if it throws, cache "Unknown" once.
     private static readonly AtomicString _machineName = new();
