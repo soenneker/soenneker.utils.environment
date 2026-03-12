@@ -45,7 +45,7 @@
         <PackageReference Include="Serilog" Version="4.3.1" />
         <PackageReference Include="Soenneker.Atomics.Strings" Version="4.0.6" />
         <PackageReference Include="Soenneker.Atomics.ValueNullableBools" Version="4.0.12" />
-        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="4.0.206" />
+        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="4.0.207" />
         <PackageReference Include="Soenneker.Extensions.String" Version="4.0.641" />
     </ItemGroup>
 </Project>
