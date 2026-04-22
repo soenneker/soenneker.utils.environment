@@ -1,10 +1,9 @@
-using Xunit;
 
 namespace Soenneker.Utils.Environment.Tests;
 
 public class EnvironmentUtilTests
 {
-    [Fact]
+    [Test]
     public void Default()
     {
     }
