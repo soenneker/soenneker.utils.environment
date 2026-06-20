@@ -46,6 +46,6 @@
         <PackageReference Include="Soenneker.Atomics.Strings" Version="4.0.14" />
         <PackageReference Include="Soenneker.Atomics.ValueNullableBools" Version="4.0.26" />
         <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="4.0.223" />
-        <PackageReference Include="Soenneker.Extensions.String" Version="4.0.697" />
+        <PackageReference Include="Soenneker.Extensions.String" Version="4.0.698" />
     </ItemGroup>
 </Project>
