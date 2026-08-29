@@ -64,6 +64,7 @@ public static class EnvironmentUtil
     /// <summary>
     /// If we're in a pipeline environment, Task.Delay (and log)
     /// </summary>
+    /// <returns>If we're in a pipeline environment, Task.Delay (and log).</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task PipelineDelay(int millisecondsDelay, CancellationToken cancellationToken = default)
     {
@@ -117,6 +118,7 @@ public static class EnvironmentUtil
     /// <summary>
     /// Throws if the environment variable is null or empty
     /// </summary>
+    /// <returns>Throws if the environment variable is null or empty.</returns>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string GetVariableStrict(string variable)
