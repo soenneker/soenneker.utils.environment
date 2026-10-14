@@ -46,6 +46,6 @@
         <PackageReference Include="Serilog" Version="4.4.0" />
         <PackageReference Include="Soenneker.Atomics.Strings" Version="4.0.31" />
         <PackageReference Include="Soenneker.Atomics.ValueNullableBools" Version="4.0.54" />
-        <PackageReference Include="Soenneker.Extensions.String" Version="4.0.791" />
+        <PackageReference Include="Soenneker.Extensions.String" Version="4.0.794" />
     </ItemGroup>
 </Project>
